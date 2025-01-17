@@ -1,8 +1,10 @@
 <template>
-  <div class="Main">
+  <div class="Main container mx-auto my-4">
     <h1>Main Page</h1>
-    <!-- Render backend data  -->
-    <pre>{{ data }}</pre>
+    <!-- Render api data  -->
+    <pre>{{ productStatus.value == 'pending' ? "Loading..." : products }}</pre>
+    <pre>{{ pStatus.value == 'pending' ? "Loading..." : productCount }}</pre>
+    <button @click="refresh">Refresh</button>
     <!-- Shared State Management -->
     <div id="main">
       Counter: {{ counter }}
@@ -26,9 +28,24 @@
 </template>
 
 <script setup>
+//using useAsyncData
+const { data: productCount, status: pStatus } = await useLazyAsyncData("pcounter", () => 
+  $fetch('/api/pcounter')
+);
+console.log(productCount.value)
+console.log(pStatus.value)
+const refresh = () => refreshNuxtData("pcounter");
+
+//useFetch json data from api 
+//you have to use { data } for const or rename using { data: whateverName }
+const { data: products, status: productStatus } = await useLazyFetch('/api/products');
+// console.log(toRaw(products.value));
+console.log(productStatus.value);
+
 //fetching api/hello.ts
-const { data } = await useFetch('/api/hello')
-console.log(data.value);
+const { data: hello } = await useFetch('/api/hello');
+console.log(hello.value);
+
 //using pinia
 import { useCounterStore } from "~/stores/myStore";
 const store = useCounterStore();
@@ -57,10 +74,10 @@ definePageMeta({
 //using nuxtContent 
 const { data: home } = await useAsyncData(() => queryCollection('content').path('/').first())
 
-useSeoMeta({
-  title: home.value?.title,
-  description: home.value?.description
-})
+// useSeoMeta({
+//   title: home.value?.title,
+//   description: home.value?.description
+// })
 </script>
 
 <style></style>
